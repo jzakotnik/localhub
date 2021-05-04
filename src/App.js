@@ -88,14 +88,15 @@ function App() {
   const classes = useStyles();
 
   return (
-    <Router>
-      <div>
+    <div>
+      <Router basename={window.location.pathname || ""}>
         <Switch>
           <Route path="/checked" children={<Confirmation />} />
+          <Route path="/localhub/:id" children={<Child />} />
           <Route path="/:id" children={<Child />} />
         </Switch>
-      </div>
-    </Router>
+      </Router>
+    </div>
   );
 }
 
