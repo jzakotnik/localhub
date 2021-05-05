@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Child from "./Child";
 
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  useParams,
-} from "react-router-dom";
-
 import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
 import CssBaseline from "@material-ui/core/CssBaseline";
@@ -86,18 +79,22 @@ const Confirmation = () => {
 
 function App() {
   const classes = useStyles();
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
-  return (
-    <div>
-      <Router basename={window.location.pathname || ""}>
-        <Switch>
-          <Route path="/checked" children={<Confirmation />} />
-          <Route path="/localhub/:id" children={<Child />} />
-          <Route path="/:id" children={<Child />} />
-        </Switch>
-      </Router>
-    </div>
-  );
+  const handleCheckin = (event) => {
+    console.log("checked in");
+    setShowConfirmation(true);
+  };
+
+  if (showConfirmation) {
+    return <div>{<Confirmation />}</div>;
+  } else {
+    return (
+      <div>
+        <Child handleCheckin={handleCheckin} />
+      </div>
+    );
+  }
 }
 
 export default App;

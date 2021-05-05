@@ -8,6 +8,8 @@ import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Switch from "@material-ui/core/Switch";
 import { useParams } from "react-router-dom";
 
+import qs from "qs";
+
 import Grid from "@material-ui/core/Grid";
 import Box from "@material-ui/core/Box";
 import ExploreIcon from "@material-ui/icons/Explore";
@@ -63,7 +65,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Child = () => {
+const Child = (props) => {
   function valuetext(value) {
     return `${value}`;
   }
@@ -92,6 +94,8 @@ const Child = () => {
   ];
   const [savedDistance, setSavedDistance] = useState(0);
   const [savedCO2, setSavedCO2] = useState(0);
+  const [user, setUser] = useState("");
+
   const [travel, setTravel] = useState({
     car: false,
     bike: true,
@@ -99,21 +103,35 @@ const Child = () => {
   });
 
   const classes = useStyles();
-  let { id, location } = useParams();
 
   useEffect(() => {
     console.log("Starting web app and loading..");
+    console.log(window.location.search);
+    console.log(
+      qs.parse(window.location.search, { ignoreQueryPrefix: true }).user
+    );
+    setUser(qs.parse(window.location.search, { ignoreQueryPrefix: true }).user);
   }, []);
 
   useEffect(() => {
     //console.log("Refreshing calculation");
+
     calcCO2();
 
     return () => {};
-  }, [savedDistance]);
+  }, [travel, savedDistance]);
 
   const calcCO2 = () => {
-    setSavedCO2(savedDistance * 0.15);
+    /*
+    Also beim Auto wäre es 200g pro km, beim ÖPNV 64g und bei einem Elektroauto 136g, Pedelec 4g
+    */
+    const carFactor = travel.car ? 150 : 0;
+    const bikeFactor = travel.bike ? 4 : 0;
+    const publicFactor = travel.public ? 64 : 0;
+
+    setSavedCO2(
+      (savedDistance * (carFactor + bikeFactor + publicFactor)) / 1000
+    );
   };
 
   const handleTravelChange = (event) => {
@@ -133,7 +151,7 @@ const Child = () => {
             <ExploreIcon color="primary" />
           </Avatar>
           <Typography component="h4" variant="h7">
-            Willkommen, <b>{id}</b>
+            Willkommen, <b>{user.toUpperCase()}</b>
           </Typography>
           <div className={classes.typography}>
             <div className={classes.productParameters}>
@@ -163,7 +181,7 @@ const Child = () => {
               />
             </div>
             <Typography component="h4" variant="h7">
-              Meine Verkehrsmittel heute waren
+              Meine Verkehrsmittel heute wären gewesen
             </Typography>
             <FormGroup column>
               <FormControlLabel
@@ -221,9 +239,9 @@ const Child = () => {
               }}
               fullWidth
               name="savedCO2"
-              label="Gesparte CO2 mit diesem Besuch"
+              label="Gesparte kg CO2 mit diesem Besuch"
               id="savedCO2"
-              value={savedCO2}
+              value={savedCO2 + " kg"}
             />
             <Button
               variant="contained"
@@ -231,7 +249,7 @@ const Child = () => {
               size="large"
               className={classes.button}
               startIcon={<OfflinePinIcon />}
-              href="/checked"
+              onClick={props.handleCheckin}
             >
               Check-In
             </Button>
